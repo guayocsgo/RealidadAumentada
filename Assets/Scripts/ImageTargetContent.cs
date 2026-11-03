@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
+using Unity.XR.CoreUtils;
 using RealidadAumentada.Prototype;
 
 [RequireComponent(typeof(ARTrackedImageManager))]
@@ -88,6 +89,7 @@ public class ImageTargetContent : MonoBehaviour
     private Text statusDetailText;
     private Text countersText;
     private Text scaleLabelText;
+    private Text liveCamButtonLabel;
     private GameObject previewModalPanel;
     private Font uiFont;
 
@@ -100,11 +102,19 @@ public class ImageTargetContent : MonoBehaviour
     private void Awake()
     {
         manager = GetComponent<ARTrackedImageManager>();
-        arCamera = Camera.main != null ? Camera.main : FindFirstObjectByType<Camera>();
-        liveCameraFeed = FindFirstObjectByType<ARLiveCameraFeedController>();
-        if (liveCameraFeed == null && arCamera != null)
+        XROrigin xrOrigin = GetComponent<XROrigin>();
+        if (xrOrigin == null)
         {
-            liveCameraFeed = gameObject.AddComponent<ARLiveCameraFeedController>();
+            xrOrigin = FindFirstObjectByType<XROrigin>();
+        }
+
+        if (xrOrigin != null && xrOrigin.Camera != null)
+        {
+            arCamera = xrOrigin.Camera;
+        }
+        else
+        {
+            arCamera = Camera.main != null ? Camera.main : FindFirstObjectByType<Camera>();
         }
 
         uiFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
@@ -116,6 +126,41 @@ public class ImageTargetContent : MonoBehaviour
         LoadReferenceTexturesAndBuildGrids();
         EnsureDefaultPrefabsIfEmpty();
         BuildImageTrackingUI();
+    }
+
+    private void EnsureLiveCameraFeed()
+    {
+        if (liveCameraFeed == null)
+        {
+            liveCameraFeed = FindFirstObjectByType<ARLiveCameraFeedController>();
+        }
+
+        if (liveCameraFeed == null)
+        {
+            GameObject camSystemGo = new GameObject("[AR Live Camera System]");
+            liveCameraFeed = camSystemGo.AddComponent<ARLiveCameraFeedController>();
+        }
+
+        if (liveCameraFeed != null)
+        {
+            liveCameraFeed.OnCameraFeedStateChanged -= HandleLiveCameraStateChanged;
+            liveCameraFeed.OnCameraFeedStateChanged += HandleLiveCameraStateChanged;
+        }
+    }
+
+    private void HandleLiveCameraStateChanged(bool isActive, string deviceName)
+    {
+        if (isActive)
+        {
+            ClearSimulationTrackablesForLiveCamera();
+        }
+
+        if (liveCamButtonLabel != null)
+        {
+            liveCamButtonLabel.text = isActive
+                ? $"Cámara Activa: {deviceName}"
+                : "Activar Cámara iPhone (Iriun)";
+        }
     }
 
     private void OnEnable()
@@ -136,6 +181,7 @@ public class ImageTargetContent : MonoBehaviour
 
     private void Start()
     {
+        EnsureLiveCameraFeed();
         UpdateStatusUIWaiting();
         RefreshCountersUI();
         UpdateAnimationButtonsVisualState();
@@ -162,7 +208,7 @@ public class ImageTargetContent : MonoBehaviour
             liveCameraFeed.IsLiveFeedActive)
         {
             opticalScanTimer += Time.deltaTime;
-            if (opticalScanTimer >= 0.18f)
+            if (opticalScanTimer >= 0.45f)
             {
                 opticalScanTimer = 0f;
                 RunOpticalWebcamTargetCheck();
@@ -173,6 +219,11 @@ public class ImageTargetContent : MonoBehaviour
 
     private void OnImagesChanged(ARTrackablesChangedEventArgs<ARTrackedImage> args)
     {
+#if UNITY_EDITOR || UNITY_STANDALONE
+        if (liveCameraFeed != null && liveCameraFeed.IsLiveFeedActive)
+            return;
+#endif
+
         foreach (ARTrackedImage image in args.added)
         {
             RegisterDetectionIfTracking(image);
@@ -197,6 +248,25 @@ public class ImageTargetContent : MonoBehaviour
         }
 
         RefreshOverallStatusFromTrackables();
+    }
+
+    private void ClearSimulationTrackablesForLiveCamera()
+    {
+        foreach (KeyValuePair<TrackableId, GameObject> kvp in content)
+        {
+            if (kvp.Value != null)
+            {
+                Destroy(kvp.Value);
+            }
+        }
+
+        content.Clear();
+        lastTrackingStates.Clear();
+
+        if (simulatedTrackingState != TrackingState.Tracking)
+        {
+            UpdateStatusUIWaiting();
+        }
     }
 
     private void UpdateContent(ARTrackedImage image)
@@ -683,8 +753,8 @@ public class ImageTargetContent : MonoBehaviour
         if (previewModalPanel != null && previewModalPanel.activeSelf)
             return;
 
-        RawImage rawImg = FindFirstObjectByType<RawImage>();
-        if (rawImg == null || !(rawImg.texture is WebCamTexture webCam) || !webCam.isPlaying || webCam.width < 64)
+        WebCamTexture webCam = liveCameraFeed != null ? liveCameraFeed.ActiveWebCamTexture : null;
+        if (webCam == null || !webCam.isPlaying || !webCam.didUpdateThisFrame || webCam.width < 64)
             return;
 
         int w = webCam.width;
@@ -1251,15 +1321,14 @@ public class ImageTargetContent : MonoBehaviour
 
         GameObject cameraRow = CreateRow("CameraRow", bottomPanel.transform, 12f, 68f);
 
-        Button camBtn = CreateButton("LiveCamBtn", cameraRow.transform, "Activar Cámara iPhone (Iriun)", new Color(0.16f, 0.58f, 0.96f, 1f), out Text camBtnLabel, out _);
+        Button camBtn = CreateButton("LiveCamBtn", cameraRow.transform, "Activar Cámara iPhone (Iriun)", new Color(0.16f, 0.58f, 0.96f, 1f), out liveCamButtonLabel, out _);
         camBtn.onClick.AddListener(() =>
         {
+            EnsureLiveCameraFeed();
             if (liveCameraFeed != null)
             {
+                ClearSimulationTrackablesForLiveCamera();
                 liveCameraFeed.ToggleOrCycleLiveCamera();
-                camBtnLabel.text = liveCameraFeed.IsLiveFeedActive
-                    ? $"Cámara Activa: {liveCameraFeed.ActiveDeviceName}"
-                    : "Activar Cámara iPhone (Iriun)";
             }
         });
 

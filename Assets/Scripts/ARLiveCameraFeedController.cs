@@ -3,15 +3,18 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using UnityEngine.XR.ARFoundation;
 using Unity.XR.CoreUtils;
 
 namespace RealidadAumentada.Prototype
 {
     public class ARLiveCameraFeedController : MonoBehaviour
     {
+        private static WebCamTexture sharedWebCamTexture;
+
         [SerializeField] private bool startLiveCameraInEditor = false;
         [SerializeField] private int xrSimulationEnvironmentLayer = 30;
-        [SerializeField] private float backgroundPlaneDistance = 18f;
+        [SerializeField] private float backgroundPlaneDistance = 12f;
 
         private Camera arCamera;
         private XROrigin xrOrigin;
@@ -20,10 +23,12 @@ namespace RealidadAumentada.Prototype
         private AspectRatioFitter aspectRatioFitter;
         private WebCamTexture activeWebCamTexture;
         private Coroutine autoScanCoroutine;
+        private Coroutine connectCameraCoroutine;
 
         private int originalCullingMask;
         private CameraClearFlags originalClearFlags;
         private bool isLiveFeedActive;
+        private bool isConnectingCamera;
         private int currentDeviceIndex = -1;
         private int manualRotationOffset = 0;
         private string activeDeviceName = "Sin cámara";
@@ -32,28 +37,55 @@ namespace RealidadAumentada.Prototype
 
         public bool IsLiveFeedActive => isLiveFeedActive;
         public string ActiveDeviceName => activeDeviceName;
+        public WebCamTexture ActiveWebCamTexture => activeWebCamTexture;
 
         private void Awake()
         {
-            arCamera = Camera.main;
-            if (arCamera == null)
-            {
-                arCamera = FindFirstObjectByType<Camera>();
-            }
-
-            xrOrigin = FindFirstObjectByType<XROrigin>();
-
-            if (arCamera != null)
-            {
-                originalCullingMask = arCamera.cullingMask;
-                originalClearFlags = arCamera.clearFlags;
-            }
-
+            ResolveCameraReference();
             BuildBackgroundVideoCanvas();
+        }
+
+        private void ResolveCameraReference()
+        {
+            if (xrOrigin == null)
+            {
+                xrOrigin = FindFirstObjectByType<XROrigin>();
+            }
+
+            Camera resolvedCam = Camera.main;
+            if (resolvedCam == null && xrOrigin != null && xrOrigin.Camera != null)
+            {
+                resolvedCam = xrOrigin.Camera;
+            }
+            if (resolvedCam == null)
+            {
+                resolvedCam = FindFirstObjectByType<Camera>();
+            }
+
+            if (resolvedCam != null)
+            {
+                if (arCamera != resolvedCam)
+                {
+                    arCamera = resolvedCam;
+                    originalCullingMask = arCamera.cullingMask;
+                    originalClearFlags = arCamera.clearFlags;
+                }
+
+                if (arCamera.farClipPlane < 35f)
+                {
+                    arCamera.farClipPlane = 50f;
+                }
+            }
         }
 
         private void Start()
         {
+            ResolveCameraReference();
+            if (backgroundCanvas != null && arCamera != null)
+            {
+                backgroundCanvas.worldCamera = arCamera;
+            }
+
 #if UNITY_EDITOR || UNITY_STANDALONE
             if (startLiveCameraInEditor)
             {
@@ -64,14 +96,36 @@ namespace RealidadAumentada.Prototype
 
         private void OnDisable()
         {
+            CleanupCameraAndCoroutines();
+            RestoreSimulationEnvironmentVisuals();
+        }
+
+        private void OnDestroy()
+        {
+            CleanupCameraAndCoroutines();
+        }
+
+        private void OnApplicationQuit()
+        {
+            CleanupCameraAndCoroutines();
+        }
+
+        private void CleanupCameraAndCoroutines()
+        {
             if (autoScanCoroutine != null)
             {
                 StopCoroutine(autoScanCoroutine);
                 autoScanCoroutine = null;
             }
 
+            if (connectCameraCoroutine != null)
+            {
+                StopCoroutine(connectCameraCoroutine);
+                connectCameraCoroutine = null;
+            }
+
+            isConnectingCamera = false;
             StopWebCam();
-            RestoreSimulationEnvironmentVisuals();
         }
 
         private void Update()
@@ -107,6 +161,10 @@ namespace RealidadAumentada.Prototype
 
         public void TriggerSurfaceScanSweep()
         {
+            ARPlaneManager planeMgr = FindFirstObjectByType<ARPlaneManager>();
+            if (planeMgr == null || !planeMgr.enabled)
+                return;
+
             if (autoScanCoroutine != null)
             {
                 StopCoroutine(autoScanCoroutine);
@@ -130,19 +188,6 @@ namespace RealidadAumentada.Prototype
                 currentDeviceIndex = FindPreferredDeviceIndex(devices);
                 StartCameraAtIndex(devices, currentDeviceIndex);
             }
-            else if (devices.Length > 1)
-            {
-                int nextIndex = (currentDeviceIndex + 1) % devices.Length;
-                if (nextIndex == FindPreferredDeviceIndex(devices))
-                {
-                    DisableLiveCameraFeed();
-                }
-                else
-                {
-                    currentDeviceIndex = nextIndex;
-                    StartCameraAtIndex(devices, currentDeviceIndex);
-                }
-            }
             else
             {
                 DisableLiveCameraFeed();
@@ -159,16 +204,19 @@ namespace RealidadAumentada.Prototype
                 return;
             }
 
-            if (currentDeviceIndex < 0 || currentDeviceIndex >= devices.Length)
-            {
-                currentDeviceIndex = FindPreferredDeviceIndex(devices);
-            }
-
+            currentDeviceIndex = FindPreferredDeviceIndex(devices);
             StartCameraAtIndex(devices, currentDeviceIndex);
         }
 
         public void DisableLiveCameraFeed()
         {
+            if (connectCameraCoroutine != null)
+            {
+                StopCoroutine(connectCameraCoroutine);
+                connectCameraCoroutine = null;
+            }
+
+            isConnectingCamera = false;
             StopWebCam();
             RestoreSimulationEnvironmentVisuals();
 
@@ -184,19 +232,116 @@ namespace RealidadAumentada.Prototype
 
         private void StartCameraAtIndex(WebCamDevice[] devices, int index)
         {
-            StopWebCam();
+            if (connectCameraCoroutine != null)
+            {
+                StopCoroutine(connectCameraCoroutine);
+                connectCameraCoroutine = null;
+            }
 
-            string deviceName = devices[index].name;
-            activeWebCamTexture = new WebCamTexture(deviceName, 1280, 720, 30);
+            connectCameraCoroutine = StartCoroutine(ConnectWorkingCameraRoutine(devices, index));
+        }
+
+        private IEnumerator ConnectWorkingCameraRoutine(WebCamDevice[] devices, int preferredIndex)
+        {
+            isConnectingCamera = true;
+            ResolveCameraReference();
+
+            if (backgroundCanvas == null)
+            {
+                BuildBackgroundVideoCanvas();
+            }
+            else if (arCamera != null)
+            {
+                backgroundCanvas.worldCamera = arCamera;
+                backgroundCanvas.planeDistance = backgroundPlaneDistance;
+            }
+
+            bool hadExistingWebCam = activeWebCamTexture != null || sharedWebCamTexture != null;
+            StopWebCam();
+            if (hadExistingWebCam)
+            {
+                yield return null;
+                yield return null;
+            }
+
+            int safeIndex = Mathf.Clamp(preferredIndex, 0, devices.Length - 1);
+            string deviceName = devices[safeIndex].name;
+
+            StartRawWebCam(deviceName);
+            FinalizeActiveCamera(safeIndex, deviceName);
+
+            float checkTimer = 0f;
+            while (checkTimer < 0.6f)
+            {
+                checkTimer += Time.deltaTime;
+                if (activeWebCamTexture != null && activeWebCamTexture.isPlaying)
+                {
+                    connectCameraCoroutine = null;
+                    yield break;
+                }
+                yield return null;
+            }
+
+            if (activeWebCamTexture == null || !activeWebCamTexture.isPlaying)
+            {
+                StopWebCam();
+                yield return null;
+                yield return null;
+                StartRawWebCam(deviceName);
+                FinalizeActiveCamera(safeIndex, deviceName);
+            }
+
+            connectCameraCoroutine = null;
+        }
+
+        private void StartRawWebCam(string deviceName)
+        {
+            StopWebCam();
+            ResolveCameraReference();
+
+            activeWebCamTexture = new WebCamTexture(deviceName);
+            sharedWebCamTexture = activeWebCamTexture;
+            activeWebCamTexture.filterMode = FilterMode.Trilinear;
             activeWebCamTexture.Play();
 
             if (cameraRawImage != null)
             {
                 cameraRawImage.texture = activeWebCamTexture;
+                cameraRawImage.color = Color.white;
             }
 
             if (backgroundCanvas != null)
             {
+                if (arCamera != null)
+                {
+                    backgroundCanvas.worldCamera = arCamera;
+                    backgroundCanvas.planeDistance = backgroundPlaneDistance;
+                }
+                backgroundCanvas.gameObject.SetActive(true);
+            }
+
+            HideSimulationEnvironmentVisuals();
+            isLiveFeedActive = true;
+        }
+
+        private void FinalizeActiveCamera(int index, string deviceName)
+        {
+            isConnectingCamera = false;
+            currentDeviceIndex = index;
+
+            if (cameraRawImage != null)
+            {
+                cameraRawImage.texture = activeWebCamTexture;
+                cameraRawImage.color = Color.white;
+            }
+
+            if (backgroundCanvas != null)
+            {
+                if (arCamera != null)
+                {
+                    backgroundCanvas.worldCamera = arCamera;
+                    backgroundCanvas.planeDistance = backgroundPlaneDistance;
+                }
                 backgroundCanvas.gameObject.SetActive(true);
             }
 
@@ -255,8 +400,24 @@ namespace RealidadAumentada.Prototype
                     activeWebCamTexture.Stop();
                 }
 
+                if (sharedWebCamTexture == activeWebCamTexture)
+                {
+                    sharedWebCamTexture = null;
+                }
+
                 Destroy(activeWebCamTexture);
                 activeWebCamTexture = null;
+            }
+
+            if (sharedWebCamTexture != null)
+            {
+                if (sharedWebCamTexture.isPlaying)
+                {
+                    sharedWebCamTexture.Stop();
+                }
+
+                Destroy(sharedWebCamTexture);
+                sharedWebCamTexture = null;
             }
         }
 
@@ -266,6 +427,7 @@ namespace RealidadAumentada.Prototype
                 return;
 
             arCamera.cullingMask &= ~(1 << xrSimulationEnvironmentLayer);
+            arCamera.cullingMask |= (1 << 0) | (1 << 5);
         }
 
         private void RestoreSimulationEnvironmentVisuals()
@@ -283,6 +445,7 @@ namespace RealidadAumentada.Prototype
                 return;
 
             GameObject canvasGo = new GameObject("ARLiveCamera_BackgroundCanvas");
+            canvasGo.layer = 0;
             canvasGo.transform.SetParent(transform, false);
 
             backgroundCanvas = canvasGo.AddComponent<Canvas>();
@@ -296,6 +459,7 @@ namespace RealidadAumentada.Prototype
             scaler.referenceResolution = new Vector2(1080f, 1920f);
 
             GameObject rawImageGo = new GameObject("LiveVideoRawImage");
+            rawImageGo.layer = 0;
             rawImageGo.transform.SetParent(canvasGo.transform, false);
 
             RectTransform rect = rawImageGo.AddComponent<RectTransform>();
@@ -325,10 +489,32 @@ namespace RealidadAumentada.Prototype
                 for (int i = 0; i < devices.Length; i++)
                 {
                     if (!string.IsNullOrEmpty(devices[i].name) &&
+                        !devices[i].name.Contains("#") &&
                         devices[i].name.ToLowerInvariant().Contains(keyword))
                     {
                         return i;
                     }
+                }
+            }
+
+            for (int k = 0; k < preferredKeywords.Length; k++)
+            {
+                string keyword = preferredKeywords[k];
+                for (int i = 0; i < devices.Length; i++)
+                {
+                    if (!string.IsNullOrEmpty(devices[i].name) &&
+                        devices[i].name.ToLowerInvariant().Contains(keyword))
+                    {
+                        return i;
+                    }
+                }
+            }
+
+            for (int i = 0; i < devices.Length; i++)
+            {
+                if (!string.IsNullOrEmpty(devices[i].name) && !devices[i].name.Contains("#"))
+                {
+                    return i;
                 }
             }
 
