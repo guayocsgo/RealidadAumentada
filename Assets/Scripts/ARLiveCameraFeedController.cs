@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 using Unity.XR.CoreUtils;
 
@@ -24,6 +25,7 @@ namespace RealidadAumentada.Prototype
         private CameraClearFlags originalClearFlags;
         private bool isLiveFeedActive;
         private int currentDeviceIndex = -1;
+        private int manualRotationOffset = 0;
         private string activeDeviceName = "Sin cámara";
 
         public event Action<bool, string> OnCameraFeedStateChanged;
@@ -77,16 +79,27 @@ namespace RealidadAumentada.Prototype
             if (!isLiveFeedActive || activeWebCamTexture == null || !activeWebCamTexture.isPlaying)
                 return;
 
+            if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
+            {
+                manualRotationOffset = (manualRotationOffset + 90) % 360;
+            }
+
             if (activeWebCamTexture.width > 16 && activeWebCamTexture.height > 16)
             {
+                int totalRot = (activeWebCamTexture.videoRotationAngle + manualRotationOffset) % 360;
+                bool isRotated90 = (totalRot == 90 || totalRot == 270);
+
                 if (aspectRatioFitter != null)
                 {
-                    aspectRatioFitter.aspectRatio = (float)activeWebCamTexture.width / activeWebCamTexture.height;
+                    float w = activeWebCamTexture.width;
+                    float h = activeWebCamTexture.height;
+                    aspectRatioFitter.aspectRatio = isRotated90 ? (h / w) : (w / h);
                 }
 
                 if (cameraRawImage != null)
                 {
                     float scaleY = activeWebCamTexture.videoVerticallyMirrored ? -1f : 1f;
+                    cameraRawImage.rectTransform.localEulerAngles = new Vector3(0f, 0f, -totalRot);
                     cameraRawImage.rectTransform.localScale = new Vector3(1f, scaleY, 1f);
                 }
             }
