@@ -1,0 +1,19 @@
+REAL-WORLD CAT SIZES
+
+Unity units: 1 unit = 1 metre.
+Ready prefabs have root Transform scale (1, 1, 1).
+These representative adult sizes are measured in the standing rest pose,
+from the lowest body vertex to the dorsal shoulder surface, excluding fur.
+Breed sizes naturally vary between individuals.
+
+Cat_05 / Tabby: shoulder height 26 cm; body height including ears about 30.6 cm.
+
+Ginger, Tuxedo and White use the same physical size as Tabby.
+The scale is applied to the existing rig and renderer children.
+Top-level position/scale animation curves, LOD bounds and root colliders
+are adjusted together. Bone rotations and animation timing are preserved.
+Fur shell maximum lengths and card/whisker UV dimensions are calibrated
+to the same physical size; grooming directions and body UVs are preserved.
+The original authoring FBX import scale matches this calibration.
+The Render FBX import settings remain unchanged because ready prefabs
+share its mesh data. Use the ready prefabs for the calibrated Unity size.

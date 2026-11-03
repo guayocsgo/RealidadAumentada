@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: ef2d38aadf7e5bbab5052d2ea188814d
+ShaderIncludeImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 412724
+  packageName: Grey Cat - Realistic Cat Pack Demo
+  packageVersion: 1.1
+  assetPath: Assets/Realistic Cat Demo/Shared/Shaders/Fur/FurCommon.hlsl
+  uploadId: 1015464

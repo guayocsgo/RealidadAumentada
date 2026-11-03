@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: a0f28c3d717d5fcd9fbd15c8513d786f
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 412724
+  packageName: Grey Cat - Realistic Cat Pack Demo
+  packageVersion: 1.1
+  assetPath: Assets/Realistic Cat Demo/Shared/Shaders/HD/CatSkinURP.shader
+  uploadId: 1015464

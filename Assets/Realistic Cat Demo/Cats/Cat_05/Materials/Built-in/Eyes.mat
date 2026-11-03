@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Eyes
+  m_Shader: {fileID: 4800000, guid: e96b0afe96fe515b8f1674efdf850602, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _BaseMap:
+        m_Texture: {fileID: 2800000, guid: 46a4a2b4330758889c89c28263cd4cdc, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _IrisMap:
+        m_Texture: {fileID: 2800000, guid: 68759d97cf075975b2c0737ab866e77f, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _ScleraMap:
+        m_Texture: {fileID: 2800000, guid: 9d1767b0cf7d513494e9da1abe40e7c6, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _CorneaBulge: 0.3
+    - _CorneaSmoothness: 0.96
+    - _CornerShadowStrength: 0.52
+    - _CornerShadowWidth: 0.26
+    - _IrisDepth: 0.028
+    - _IrisHue: 0
+    - _IrisRadius: 0.48
+    - _IrisRotation: 0
+    - _IrisSaturation: 0.85
+    - _IrisUVOffsetX: -0.04670415
+    - _IrisUVOffsetY: 0
+    - _IrisUVSet: 1
+    - _LowerShadowHeight: 0.27
+    - _LowerShadowStrength: 0.38
+    - _Pupil: 0.18
+    - _PupilHeight: 1
+    - _PupilShape: 0
+    - _PupilWidth: 1
+    - _ShadowHeight: 0.62
+    - _ShadowSoftness: 0.14
+    - _ShadowStrength: 0.76
+    m_Colors:
+    - _BaseColor: {r: 1, g: 1, b: 1, a: 1}
+    - _EyeForwardOS: {r: 0, g: 0, b: 1, a: 0}
+    - _EyeRect: {r: 0.23730479, g: 0.8798828, b: 0.108328655, a: 0.110000014}
+    - _EyeUpOS: {r: 0, g: 1, b: 0, a: 0}
+    - _IrisColor: {r: 1, g: 1, b: 1, a: 1}
+    - _ScleraColor: {r: 0.38, g: 0.35, b: 0.32, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: faf34d8885875228a8b1ca5310e9416d
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 412724
+  packageName: Grey Cat - Realistic Cat Pack Demo
+  packageVersion: 1.1
+  assetPath: Assets/Realistic Cat Demo/Shared/Shaders/Fur/FurCards.shader
+  uploadId: 1015464

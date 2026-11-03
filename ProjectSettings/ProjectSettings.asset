@@ -163,9 +163,9 @@ PlayerSettings:
   androidMaxAspectRatio: 2.4
   androidMinAspectRatio: 1
   applicationIdentifier:
-    Android: com.unity.template.ar_mobile
-    Standalone: com.unity.template.ar-mobile
-    iPhone: com.unity.template.armobile
+    Android: com.pedra.realidadaumentada
+    Standalone: com.pedra.realidadaumentada
+    iPhone: com.pedra.realidadaumentada
   buildNumber:
     Bratwurst: 0
     Standalone: 0
@@ -191,7 +191,7 @@ PlayerSettings:
   VertexChannelCompressionMask: 4054
   iPhoneSdkVersion: 988
   iOSSimulatorArchitecture: 0
-  iOSTargetOSVersionString: 13.0
+  iOSTargetOSVersionString: 14.0
   tvOSSdkVersion: 0
   tvOSSimulatorArchitecture: 0
   tvOSRequireExtendedGameController: 0
@@ -248,8 +248,8 @@ PlayerSettings:
   iOSManualSigningProvisioningProfileType: 0
   tvOSManualSigningProvisioningProfileType: 0
   VisionOSManualSigningProvisioningProfileType: 0
-  appleEnableAutomaticSigning: 0
-  iOSRequireARKit: 0
+  appleEnableAutomaticSigning: 1
+  iOSRequireARKit: 1
   iOSAutomaticallyDetectAndAddCapabilities: 1
   appleEnableProMotion: 0
   shaderPrecisionModel: 0
@@ -564,7 +564,8 @@ PlayerSettings:
   enableInternalProfiler: 0
   logObjCUncaughtExceptions: 1
   enableCrashReportAPI: 0
-  cameraUsageDescription: AR Camera
+  cameraUsageDescription: Se requiere acceso a la camara para detectar planos y posicionar
+    objetos 3D en Realidad Aumentada.
   locationUsageDescription: 
   microphoneUsageDescription: 
   bluetoothUsageDescription: 

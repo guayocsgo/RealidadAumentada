@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 7ac12bff93595a9ba2b0f165011f287a
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 412724
+  packageName: Grey Cat - Realistic Cat Pack Demo
+  packageVersion: 1.1
+  assetPath: Assets/Realistic Cat Demo/Editor/ShowcaseMenu.cs
+  uploadId: 1015464

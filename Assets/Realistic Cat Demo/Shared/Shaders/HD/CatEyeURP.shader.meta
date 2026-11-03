@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 08481b5a8b7956298c31c348a4f2d0f6
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 412724
+  packageName: Grey Cat - Realistic Cat Pack Demo
+  packageVersion: 1.1
+  assetPath: Assets/Realistic Cat Demo/Shared/Shaders/HD/CatEyeURP.shader
+  uploadId: 1015464

@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 848409ee8ba454f42a5ddff137688a27, type: 3}
+  m_Name: TargetsLibrary
+  m_EditorClassIdentifier: 
+  m_GuidLow: 5646366422473680688
+  m_GuidHigh: 8796251695703528612
+  m_DataStore:
+    m_Storage: []
+  m_Images:
+  - m_SerializedGuid:
+      m_GuidLow: 5217295039915199047
+      m_GuidHigh: 15261608422394933680
+    m_SerializedTextureGuid:
+      m_GuidLow: 7977249012742073709
+      m_GuidHigh: 4324398650579402123
+    m_Size: {x: 0.15, y: 0.15}
+    m_SpecifySize: 1
+    m_Name: Perro
+    m_Texture: {fileID: 2800000, guid: 3953ad6de1b66eb48bbdf63aa959033c, type: 3}
+  - m_SerializedGuid:
+      m_GuidLow: 5360361907929993978
+      m_GuidHigh: 13512914807990849725
+    m_SerializedTextureGuid:
+      m_GuidLow: 13827200446452204640
+      m_GuidHigh: 8660552828519619881
+    m_Size: {x: 0.15, y: 0.15}
+    m_SpecifySize: 1
+    m_Name: Gato
+    m_Texture: {fileID: 2800000, guid: e0e80460158bbfe4299d6a76e9763078, type: 3}

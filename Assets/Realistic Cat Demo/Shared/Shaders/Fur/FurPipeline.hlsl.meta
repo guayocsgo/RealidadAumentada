@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 5a45acc5e9b35e6385c89f53eb071ca9
+ShaderIncludeImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 412724
+  packageName: Grey Cat - Realistic Cat Pack Demo
+  packageVersion: 1.1
+  assetPath: Assets/Realistic Cat Demo/Shared/Shaders/Fur/FurPipeline.hlsl
+  uploadId: 1015464

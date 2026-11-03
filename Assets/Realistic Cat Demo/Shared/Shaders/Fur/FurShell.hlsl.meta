@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: ece4f276408951fd96ffa5c5d23eaafc
+ShaderIncludeImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 412724
+  packageName: Grey Cat - Realistic Cat Pack Demo
+  packageVersion: 1.1
+  assetPath: Assets/Realistic Cat Demo/Shared/Shaders/Fur/FurShell.hlsl
+  uploadId: 1015464

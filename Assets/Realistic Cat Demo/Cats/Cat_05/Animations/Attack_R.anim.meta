@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 221013a6e50751c18ca3a9b3529aca8e
+labels:
+- Authored
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 7400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 412724
+  packageName: Grey Cat - Realistic Cat Pack Demo
+  packageVersion: 1.1
+  assetPath: Assets/Realistic Cat Demo/Cats/Cat_05/Animations/Attack_R.anim
+  uploadId: 1015464

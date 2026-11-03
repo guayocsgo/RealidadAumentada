@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 08804598c72659349caf1615757b2aa3
+ShaderIncludeImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 412724
+  packageName: Grey Cat - Realistic Cat Pack Demo
+  packageVersion: 1.1
+  assetPath: Assets/Realistic Cat Demo/Shared/Shaders/HD/CatTissue.hlsl
+  uploadId: 1015464
