@@ -187,11 +187,7 @@ namespace RealidadAumentada.Prototype
             StopWebCam();
 
             string deviceName = devices[index].name;
-            activeWebCamTexture = new WebCamTexture(deviceName, 1920, 1080, 60)
-            {
-                filterMode = FilterMode.Trilinear,
-                anisoLevel = 4
-            };
+            activeWebCamTexture = new WebCamTexture(deviceName, 1280, 720, 30);
             activeWebCamTexture.Play();
 
             if (cameraRawImage != null)
